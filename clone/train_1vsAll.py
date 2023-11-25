@@ -75,11 +75,16 @@ if __name__ == '__main__':
             test_data_t = all_data[all_data['functionality_id'] == ii]
             print()
             print("Starting %d. Size train: %d | Size test: %d" % (ii, len(train_data_t), len(test_data_t)))
+            sys.stdout.flush()
+
         else:
             print("Not implemented yet")
             quit()
         # training procedure
         for epoch in range(EPOCHS):
+            print(epoch)
+            sys.stdout.flush()
+
             start_time = time.time()
             # training epoch
             total_acc = 0.0
@@ -101,7 +106,7 @@ if __name__ == '__main__':
                 loss = loss_function(output, Variable(train_labels))
                 loss.backward()
                 optimizer.step()
-        print("Testing-%d..."%t)
+        print("Testing-%d..."%ii)
         sys.stdout.flush()
         # testing procedure
         predicts = []
@@ -130,15 +135,8 @@ if __name__ == '__main__':
             total_loss += loss.item() * len(test_labels)
 
         if lang == 'java':
-            weights = [0, 0, 0, 0, 0, 1]
             p, r, f, _ = precision_recall_fscore_support(trues, predicts, average='binary')
-            precision += weights[t] * p
-            recall += weights[t] * r
-            f1 += weights[t] * f
-            print("Type-" + str(t) + ": " + str(p) + " " + str(r) + " " + str(f))
+            print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
             sys.stdout.flush()
         else:
             precision, recall, f1, _ = precision_recall_fscore_support(trues, predicts, average='binary')
-
-    print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (precision, recall, f1))
-    sys.stdout.flush()
