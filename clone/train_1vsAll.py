@@ -71,8 +71,8 @@ if __name__ == '__main__':
     all_functionalities.sort()
     for ii in all_functionalities:
         if lang == 'java':
-            train_data_t = all_data[all_data['functionality_id'] != ii].sample(20)
-            test_data_t = all_data[all_data['functionality_id'] == ii].sample(10)
+            train_data_t = all_data[all_data['functionality_id'] != ii]
+            test_data_t = all_data[all_data['functionality_id'] == ii]
             print()
             print("Starting %d. Size train: %d | Size test: %d" % (ii, len(train_data_t), len(test_data_t)))
             sys.stdout.flush()
