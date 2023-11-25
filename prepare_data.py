@@ -23,7 +23,7 @@ def get_blocks(node, block_seq):
     name = node.__class__.__name__
     if name in ['FuncDef', 'If', 'For', 'While', 'DoWhile']:
         block_seq.append(ASTNode(node))
-        if name is not 'For':
+        if name != 'For':
             skip = 1
         else:
             skip = len(children) - 1
@@ -33,7 +33,7 @@ def get_blocks(node, block_seq):
             if child.__class__.__name__ not in ['FuncDef', 'If', 'For', 'While', 'DoWhile', 'Compound']:
                 block_seq.append(ASTNode(child))
             get_blocks(child, block_seq)
-    elif name is 'Compound':
+    elif name == 'Compound':
         block_seq.append(ASTNode(name))
         for _, child in node.children():
             if child.__class__.__name__ not in ['If', 'For', 'While', 'DoWhile']:

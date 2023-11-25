@@ -83,7 +83,7 @@ class Pipeline:
         """
         pairs = pd.read_pickle(os.path.join(self.root, self.language,
                                             filename))
-        pairs = pairs.sample(100)
+        #pairs = pairs.sample(100)
         self.pairs = pairs
 
     # split data for training, developing and testing
