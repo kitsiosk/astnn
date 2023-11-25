@@ -8,6 +8,7 @@ from model import BatchProgramCC
 from torch.autograd import Variable
 from sklearn.metrics import precision_recall_fscore_support
 warnings.filterwarnings('ignore')
+import sys
 
 
 def get_batch(dataset, idx, bs):
@@ -35,6 +36,7 @@ if __name__ == '__main__':
     if lang == 'java':
         categories = [5]
     print("Train for ", str.upper(lang))
+    sys.stdout.flush()
     train_data = pd.read_pickle(root+lang+'/train/blocks.pkl').sample(frac=1)
     test_data = pd.read_pickle(root+lang+'/test/blocks.pkl').sample(frac=1)
 
@@ -49,7 +51,7 @@ if __name__ == '__main__':
     LABELS = 1
     EPOCHS = 5
     BATCH_SIZE = 32
-    USE_GPU = False
+    USE_GPU = torch.cuda.is_available()
 
     model = BatchProgramCC(EMBEDDING_DIM,HIDDEN_DIM,MAX_TOKENS+1,ENCODE_DIM,LABELS,BATCH_SIZE,
                                    USE_GPU, embeddings)
@@ -60,9 +62,10 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adamax(parameters)
     loss_function = torch.nn.BCELoss()
 
-    print(train_data)
+    #print(train_data)
     precision, recall, f1 = 0, 0, 0
     print('Start training...')
+    sys.stdout.flush()
     for t in categories:
         if lang == 'java':
             train_data_t = train_data[train_data['label'].isin([t, 0])]
@@ -96,6 +99,7 @@ if __name__ == '__main__':
                 loss.backward()
                 optimizer.step()
         print("Testing-%d..."%t)
+        sys.stdout.flush()
         # testing procedure
         predicts = []
         trues = []
@@ -129,7 +133,9 @@ if __name__ == '__main__':
             recall += weights[t] * r
             f1 += weights[t] * f
             print("Type-" + str(t) + ": " + str(p) + " " + str(r) + " " + str(f))
+            sys.stdout.flush()
         else:
             precision, recall, f1, _ = precision_recall_fscore_support(trues, predicts, average='binary')
 
     print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (precision, recall, f1))
+    sys.stdout.flush()
