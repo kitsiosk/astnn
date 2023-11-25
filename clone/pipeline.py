@@ -61,12 +61,16 @@ class Pipeline:
 
                 def parse_program(func):
                     tokens = javalang.tokenizer.tokenize(func)
-                    parser = javalang.parser.Parser(tokens)
-                    tree = parser.parse_member_declaration()
+                    try:
+                        parser = javalang.parser.Parser(tokens)
+                        tree = parser.parse_member_declaration()
+                    except:
+                        tree = None
                     return tree
                 source = pd.read_csv(input_path, delimiter='\t')
                 source.columns = ['id', 'code']
                 source['code'] = source['code'].progress_apply(parse_program)
+                source         = source.dropna()
                 source.to_pickle(output_path)
         self.sources = source
         return source
@@ -79,6 +83,7 @@ class Pipeline:
         """
         pairs = pd.read_pickle(os.path.join(self.root, self.language,
                                             filename))
+        pairs = pairs.sample(100)
         self.pairs = pairs
 
     # split data for training, developing and testing
@@ -119,8 +124,9 @@ class Pipeline:
         data_path = self.root+'/'+self.language+'/'
         if not input_file:
             input_file = self.train_file_path
-        pairs = pd.read_pickle(input_file)
-        train_ids = pairs['id1'].append(pairs['id2']).unique()
+        pairs =pd.read_pickle(input_file)
+        #breakpoint()
+        train_ids = pd.concat([pairs['id1'], pairs['id2']]).unique()
 
         trees = self.sources.set_index('id', drop=False).loc[train_ids]
         if not os.path.exists(data_path+'train/embedding'):
@@ -141,7 +147,7 @@ class Pipeline:
         # trees.to_csv(data_path+'train/programs_ns.tsv')
 
         from gensim.models.word2vec import Word2Vec
-        w2v = Word2Vec(corpus, size=size, workers=16, sg=1,
+        w2v = Word2Vec(corpus, vector_size=size, workers=16, sg=1,
                        max_final_vocab=3000)
         w2v.save(data_path+'train/embedding/node_w2v_' + str(size))
 
@@ -157,12 +163,16 @@ class Pipeline:
             self.root + '/'+ self.language+'/train/embedding/node_w2v_' +
             str(self.size)
         ).wv
-        vocab = word2vec.vocab
-        max_token = word2vec.syn0.shape[0]
+
+        key_to_index = word2vec.key_to_index
+        #vocab = word2vec.vocab
+
+        #max_token = word2vec.syn0.shape[0]
+        max_token = word2vec.vectors.shape[0]
 
         def tree_to_index(node):
             token = node.token
-            result = [vocab[token].index if token in vocab else max_token]
+            result = [key_to_index[token] if token in key_to_index else max_token]
             children = node.children
             for child in children:
                 result.append(tree_to_index(child))
@@ -194,7 +204,7 @@ class Pipeline:
         df.drop(['id_x', 'id_y'], axis=1, inplace=True)
         df.dropna(inplace=True)
 
-        df.to_pickle(self.root+self.language+'/'+part+'/blocks.pkl')
+        df.to_pickle(self.root+ '/' + self.language+'/'+part+'/blocks.pkl')
 
     # run for processing data to train
     def run(self):

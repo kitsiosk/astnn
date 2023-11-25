@@ -31,25 +31,25 @@ if __name__ == '__main__':
         exit(1)
     root = 'data/'
     lang = args.lang
-    categories = 1
+    categories = [1]
     if lang == 'java':
-        categories = 5
+        categories = [5]
     print("Train for ", str.upper(lang))
     train_data = pd.read_pickle(root+lang+'/train/blocks.pkl').sample(frac=1)
     test_data = pd.read_pickle(root+lang+'/test/blocks.pkl').sample(frac=1)
 
     word2vec = Word2Vec.load(root+lang+"/train/embedding/node_w2v_128").wv
-    MAX_TOKENS = word2vec.syn0.shape[0]
-    EMBEDDING_DIM = word2vec.syn0.shape[1]
+    MAX_TOKENS = word2vec.vectors.shape[0]
+    EMBEDDING_DIM = word2vec.vectors.shape[1]
     embeddings = np.zeros((MAX_TOKENS + 1, EMBEDDING_DIM), dtype="float32")
-    embeddings[:word2vec.syn0.shape[0]] = word2vec.syn0
+    embeddings[:word2vec.vectors.shape[0]] = word2vec.vectors
 
     HIDDEN_DIM = 100
     ENCODE_DIM = 128
     LABELS = 1
     EPOCHS = 5
     BATCH_SIZE = 32
-    USE_GPU = True
+    USE_GPU = False
 
     model = BatchProgramCC(EMBEDDING_DIM,HIDDEN_DIM,MAX_TOKENS+1,ENCODE_DIM,LABELS,BATCH_SIZE,
                                    USE_GPU, embeddings)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     print(train_data)
     precision, recall, f1 = 0, 0, 0
     print('Start training...')
-    for t in range(1, categories+1):
+    for t in categories:
         if lang == 'java':
             train_data_t = train_data[train_data['label'].isin([t, 0])]
             train_data_t.loc[train_data_t['label'] > 0, 'label'] = 1
@@ -121,8 +121,9 @@ if __name__ == '__main__':
             trues.extend(test_labels.cpu().numpy())
             total += len(test_labels)
             total_loss += loss.item() * len(test_labels)
+
         if lang == 'java':
-            weights = [0, 0.005, 0.001, 0.002, 0.010, 0.982]
+            weights = [0, 0, 0, 0, 0, 1]
             p, r, f, _ = precision_recall_fscore_support(trues, predicts, average='binary')
             precision += weights[t] * p
             recall += weights[t] * r
