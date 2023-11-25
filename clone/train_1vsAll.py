@@ -80,7 +80,7 @@ if __name__ == '__main__':
         else:
             print("Not implemented yet")
             quit()
-            
+
         # training procedure
         prev_epoch_f1 = 0
         for epoch in range(EPOCHS):
@@ -139,7 +139,6 @@ if __name__ == '__main__':
             print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
             sys.stdout.flush()
 
-            breakpoint()
             if f<prev_epoch_f1:
                 print("Lower F1 than prevous epoch. Early stopping...")
                 sys.stdout.flush()
