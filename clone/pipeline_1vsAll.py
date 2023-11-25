@@ -199,7 +199,7 @@ class Pipeline:
         pairs = pd.read_pickle(data_path)
         pairs['id1'] = pairs['id1'].astype(int)
         pairs['id2'] = pairs['id2'].astype(int)
-        breakpoint()
+        
         df = pd.merge(pairs, self.blocks, how='left',
                       left_on='id1', right_on='id')
         df = pd.merge(df, self.blocks, how='left',
