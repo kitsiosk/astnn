@@ -53,15 +53,6 @@ if __name__ == '__main__':
     BATCH_SIZE = 32
     USE_GPU = torch.cuda.is_available()
 
-    model = BatchProgramCC(EMBEDDING_DIM,HIDDEN_DIM,MAX_TOKENS+1,ENCODE_DIM,LABELS,BATCH_SIZE,
-                                   USE_GPU, embeddings)
-    if USE_GPU:
-        model.cuda()
-
-    parameters = model.parameters()
-    optimizer = torch.optim.Adamax(parameters)
-    loss_function = torch.nn.BCELoss()
-
     #print(train_data)
     precision, recall, f1 = 0, 0, 0
     print('Start training...')
@@ -70,6 +61,17 @@ if __name__ == '__main__':
     all_functionalities = all_data['functionality_id'].unique()
     all_functionalities.sort()
     for ii in all_functionalities:
+        # Initialize model
+        model = BatchProgramCC(EMBEDDING_DIM,HIDDEN_DIM,MAX_TOKENS+1,ENCODE_DIM,LABELS,BATCH_SIZE,
+                                    USE_GPU, embeddings)
+        if USE_GPU:
+            model.cuda()
+
+        parameters = model.parameters()
+        optimizer = torch.optim.Adamax(parameters)
+        loss_function = torch.nn.BCELoss()
+
+        
         if lang == 'java':
             train_data_t = all_data[all_data['functionality_id'] != ii]
             test_data_t = all_data[all_data['functionality_id'] == ii]
