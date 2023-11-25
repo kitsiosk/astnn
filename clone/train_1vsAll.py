@@ -71,8 +71,8 @@ if __name__ == '__main__':
     all_functionalities.sort()
     for ii in all_functionalities:
         if lang == 'java':
-            train_data_t = all_data[all_data['functionality_id'] != ii]
-            test_data_t = all_data[all_data['functionality_id'] == ii]
+            train_data_t = all_data[all_data['functionality_id'] != ii].sample(20)
+            test_data_t = all_data[all_data['functionality_id'] == ii].sample(10)
             print()
             print("Starting %d. Size train: %d | Size test: %d" % (ii, len(train_data_t), len(test_data_t)))
             sys.stdout.flush()
@@ -80,7 +80,9 @@ if __name__ == '__main__':
         else:
             print("Not implemented yet")
             quit()
+            
         # training procedure
+        prev_epoch_f1 = 0
         for epoch in range(EPOCHS):
             print(epoch)
             sys.stdout.flush()
@@ -91,7 +93,6 @@ if __name__ == '__main__':
             total_loss = 0.0
             total = 0.0
             i = 0
-            prev_epoch_f1 = 0
             while i < len(train_data_t):
                 batch = get_batch(train_data_t, i, BATCH_SIZE)
                 i += BATCH_SIZE
@@ -138,6 +139,7 @@ if __name__ == '__main__':
             print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
             sys.stdout.flush()
 
+            breakpoint()
             if f<prev_epoch_f1:
                 print("Lower F1 than prevous epoch. Early stopping...")
                 sys.stdout.flush()
