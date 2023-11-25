@@ -127,8 +127,9 @@ class Pipeline:
         pairs =pd.read_pickle(input_file)
         #breakpoint()
         train_ids = pd.concat([pairs['id1'], pairs['id2']]).unique()
-
-        trees = self.sources.set_index('id', drop=False).loc[train_ids]
+        common_ids = list(set(train_ids).intersection(self.sources['id']))
+        
+        trees = self.sources.set_index('id', drop=False).loc[common_ids]
         if not os.path.exists(data_path+'train/embedding'):
             os.mkdir(data_path+'train/embedding')
         if self.language == 'c':
