@@ -91,6 +91,7 @@ if __name__ == '__main__':
             total_loss = 0.0
             total = 0.0
             i = 0
+            prev_epoch_f1 = 0
             while i < len(train_data_t):
                 batch = get_batch(train_data_t, i, BATCH_SIZE)
                 i += BATCH_SIZE
@@ -106,37 +107,41 @@ if __name__ == '__main__':
                 loss = loss_function(output, Variable(train_labels))
                 loss.backward()
                 optimizer.step()
-        print("Testing-%d..."%ii)
-        sys.stdout.flush()
-        # testing procedure
-        predicts = []
-        trues = []
-        total_loss = 0.0
-        total = 0.0
-        i = 0
-        while i < len(test_data_t):
-            batch = get_batch(test_data_t, i, BATCH_SIZE)
-            i += BATCH_SIZE
-            test1_inputs, test2_inputs, test_labels = batch
-            if USE_GPU:
-                test_labels = test_labels.cuda()
 
-            model.batch_size = len(test_labels)
-            model.hidden = model.init_hidden()
-            output = model(test1_inputs, test2_inputs)
+            ###### Start testing
+            predicts = []
+            trues = []
+            total_loss = 0.0
+            total = 0.0
+            i = 0
+            while i < len(test_data_t):
+                batch = get_batch(test_data_t, i, BATCH_SIZE)
+                i += BATCH_SIZE
+                test1_inputs, test2_inputs, test_labels = batch
+                if USE_GPU:
+                    test_labels = test_labels.cuda()
 
-            loss = loss_function(output, Variable(test_labels))
+                model.batch_size = len(test_labels)
+                model.hidden = model.init_hidden()
+                output = model(test1_inputs, test2_inputs)
 
-            # calc testing acc
-            predicted = (output.data > 0.5).cpu().numpy()
-            predicts.extend(predicted)
-            trues.extend(test_labels.cpu().numpy())
-            total += len(test_labels)
-            total_loss += loss.item() * len(test_labels)
+                loss = loss_function(output, Variable(test_labels))
 
-        if lang == 'java':
-            p, r, f, _ = precision_recall_fscore_support(trues, predicts, average='binary')
-            print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
-            sys.stdout.flush()
-        else:
-            precision, recall, f1, _ = precision_recall_fscore_support(trues, predicts, average='binary')
+                # calc testing acc
+                predicted = (output.data > 0.5).cpu().numpy()
+                predicts.extend(predicted)
+                trues.extend(test_labels.cpu().numpy())
+                total += len(test_labels)
+                total_loss += loss.item() * len(test_labels)
+
+            if lang == 'java':
+                p, r, f, _ = precision_recall_fscore_support(trues, predicts, average='binary')
+                print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
+                sys.stdout.flush()
+
+                if f<prev_epoch_f1:
+                    print("Lower F1 than prevous epoch. Early stopping...")
+                    sys.stdout.flush()
+                    break
+            else:
+                precision, recall, f1, _ = precision_recall_fscore_support(trues, predicts, average='binary')
