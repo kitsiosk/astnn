@@ -134,14 +134,13 @@ if __name__ == '__main__':
                 total += len(test_labels)
                 total_loss += loss.item() * len(test_labels)
 
-            if lang == 'java':
-                p, r, f, _ = precision_recall_fscore_support(trues, predicts, average='binary')
-                print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
-                sys.stdout.flush()
+            p, r, f, _ = precision_recall_fscore_support(trues, predicts, average='binary')
+            print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
+            sys.stdout.flush()
 
-                if f<prev_epoch_f1:
-                    print("Lower F1 than prevous epoch. Early stopping...")
-                    sys.stdout.flush()
-                    break
+            if f<prev_epoch_f1:
+                print("Lower F1 than prevous epoch. Early stopping...")
+                sys.stdout.flush()
+                break
             else:
-                precision, recall, f1, _ = precision_recall_fscore_support(trues, predicts, average='binary')
+                prev_epoch_f1 = f
