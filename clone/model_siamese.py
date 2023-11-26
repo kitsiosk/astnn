@@ -45,7 +45,7 @@ class BatchTreeEncoder(nn.Module):
                 temp = node[i][1:]
                 c_num = len(temp)
                 for j in range(c_num):
-                    if temp[j][0] is not -1:
+                    if temp[j][0] != -1:
                         if len(children_index) <= j:
                             children_index.append([i])
                             children.append([temp[j]])
@@ -103,7 +103,7 @@ class BatchProgramCC(nn.Module):
         #self.dropout = nn.Dropout(0.2)
 
         # Add Batch Normalization layer
-        self.batch_norm = nn.BatchNorm1d(128) # Why 200?
+        self.batch_norm = nn.BatchNorm1d(200)
 
     def init_hidden(self):
         if self.gpu is True:
@@ -140,10 +140,11 @@ class BatchProgramCC(nn.Module):
             start = end
         encodes = torch.cat(seq)
         encodes = encodes.view(self.batch_size, max_len, -1)
-        encodes = torch.transpose(encodes, 1, 2)
-        encodes = F.max_pool1d(encodes, encodes.size(2)).squeeze(2)
+        encodes = nn.utils.rnn.pack_padded_sequence(encodes, torch.LongTensor(lens), True, False)
 
-        return encodes
+        # encodes = torch.transpose(encodes, 1, 2)
+        # encodes = F.max_pool1d(encodes, encodes.size(2)).squeeze(2)
+        # return encodes
 
         gru_out, _ = self.bigru(encodes, self.hidden)
         gru_out, _ = nn.utils.rnn.pad_packed_sequence(gru_out, batch_first=True, padding_value=-1e9)
@@ -164,6 +165,6 @@ class BatchProgramCC(nn.Module):
     #     return y
     def forward(self, x1):
         y = self.encode(x1)
-        y = self.batch_norm(y)
+        #y = self.batch_norm(y)
 
         return y

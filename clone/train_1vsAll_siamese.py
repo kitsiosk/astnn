@@ -80,8 +80,8 @@ if __name__ == '__main__':
             model.cuda()
 
         parameters = model.parameters()
-        optimizer = torch.optim.Adamax(parameters, lr=lr)
-        #optimizer = torch.optim.Adam(parameters, lr=lr)
+        #optimizer = torch.optim.Adamax(parameters, lr=lr)
+        optimizer = torch.optim.Adam(parameters, lr=lr)
 
         
         if lang == 'java':
@@ -112,8 +112,9 @@ if __name__ == '__main__':
                 batch = get_batch(train_data_t, i, BATCH_SIZE)
                 i += BATCH_SIZE
                 train1_inputs, train2_inputs, train_labels = batch
+
                 if USE_GPU:
-                    train1_inputs, train2_inputs, train_labels = train1_inputs.cuda(), train2_inputs.cuda(), train_labels.cuda()
+                    train_labels = train_labels.cuda()
 
                 model.zero_grad()
                 model.batch_size = len(train_labels)
@@ -125,6 +126,10 @@ if __name__ == '__main__':
                 loss = contrastive_loss(embeddings1, embeddings2, Variable(train_labels), margin=margin)
                 loss.backward()
                 optimizer.step()
+
+                # if (i/BATCH_SIZE) % 50 == 0:
+                #     print(loss)
+                #     print(torch.nn.functional.pairwise_distance(embeddings1, embeddings2))
 
             ###### Start testing
             similarity_scores = []
