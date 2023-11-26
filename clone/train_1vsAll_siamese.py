@@ -45,7 +45,7 @@ if __name__ == '__main__':
         categories = [5]
     print("Train for ", str.upper(lang))
     sys.stdout.flush()
-    all_data = pd.read_pickle(root+lang+'/all/blocks.pickle')
+    all_data = pd.read_pickle(root+lang+'/all/blocks.pickle').sample(200)
     all_data['label'] = 1 - all_data['label']
 
     word2vec = Word2Vec.load(root+lang+"/all/embedding/node_w2v_128").wv
@@ -147,14 +147,14 @@ if __name__ == '__main__':
 
                 # calc testing acc
                 #predicted = (output.data > 0.5).cpu().numpy()
-                similarity_scores.extend(similarity_score)
+                similarity_scores.extend(similarity_score.cpu())
                 trues.extend(1 - test_labels.cpu().numpy())
                 total += len(test_labels)
                 total_loss += loss.item() * len(test_labels)
 
             
             trues = np.array(trues)
-            predicted_labels = np.array(similarity_scores.cpu()) > 0.5
+            predicted_labels = np.array(similarity_scores) > 0.5
             p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
             print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
             sys.stdout.flush()
