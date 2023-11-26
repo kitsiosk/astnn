@@ -45,7 +45,7 @@ if __name__ == '__main__':
         categories = [5]
     print("Train for ", str.upper(lang))
     sys.stdout.flush()
-    all_data = pd.read_pickle(root+lang+'/all/blocks.pickle').sample(200)
+    all_data = pd.read_pickle(root+lang+'/all/blocks.pickle')
     all_data['label'] = 1 - all_data['label']
 
     word2vec = Word2Vec.load(root+lang+"/all/embedding/node_w2v_128").wv
