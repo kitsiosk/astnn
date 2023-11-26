@@ -10,7 +10,8 @@ from sklearn.metrics import precision_recall_fscore_support
 warnings.filterwarnings('ignore')
 import sys
 
-
+margin = 50
+print("Margin=%d"%margin)
 def get_batch(dataset, idx, bs):
     tmp = dataset.iloc[idx: idx+bs]
     x1, x2, labels = [], [], []
@@ -118,7 +119,7 @@ if __name__ == '__main__':
                 embeddings1 = model(train1_inputs)
                 embeddings2 = model(train2_inputs)
 
-                loss = contrastive_loss(embeddings1, embeddings2, Variable(train_labels), margin=50)
+                loss = contrastive_loss(embeddings1, embeddings2, Variable(train_labels), margin=margin)
                 loss.backward()
                 optimizer.step()
 
