@@ -11,7 +11,10 @@ warnings.filterwarnings('ignore')
 import sys
 
 margin = 50
+lr = 0.0001
 print("Margin=%d"%margin)
+print("lr=%0.5f", lr)
+
 def get_batch(dataset, idx, bs):
     tmp = dataset.iloc[idx: idx+bs]
     x1, x2, labels = [], [], []
@@ -61,7 +64,7 @@ if __name__ == '__main__':
     EPOCHS = 5
     BATCH_SIZE = 32
     USE_GPU = torch.cuda.is_available()
-
+    print(USE_GPU)
     #print(train_data)
     precision, recall, f1 = 0, 0, 0
     print('Start training...')
@@ -77,8 +80,8 @@ if __name__ == '__main__':
             model.cuda()
 
         parameters = model.parameters()
-        optimizer = torch.optim.Adamax(parameters)
-        loss_function = torch.nn.BCELoss()
+        optimizer = torch.optim.Adamax(parameters, lr=lr)
+        #optimizer = torch.optim.Adam(parameters, lr=lr)
 
         
         if lang == 'java':
@@ -110,12 +113,12 @@ if __name__ == '__main__':
                 i += BATCH_SIZE
                 train1_inputs, train2_inputs, train_labels = batch
                 if USE_GPU:
-                    train1_inputs, train2_inputs, train_labels = train1_inputs, train2_inputs, train_labels.cuda()
+                    train1_inputs, train2_inputs, train_labels = train1_inputs.cuda(), train2_inputs.cuda(), train_labels.cuda()
 
                 model.zero_grad()
                 model.batch_size = len(train_labels)
                 model.hidden = model.init_hidden()
-                #output = model(train1_inputs, train2_inputs)
+
                 embeddings1 = model(train1_inputs)
                 embeddings2 = model(train2_inputs)
 
@@ -173,7 +176,7 @@ if __name__ == '__main__':
             predicted_labels = np.array(similarity_scores) > best_similarity_threshold
             p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
             acc = 1-np.sum(np.abs(predicted_labels-np.transpose(trues)))/trues.shape[0]
-            print("(P,R,F1,A):%.3f, %.3f, %.3f, %.3f for similarity threshold %0.2f" % (p, r, f, acc, best_similarity_threshold))
+            print("(F1,P,R,A):%.3f, %.3f, %.3f, %.3f for similarity threshold %0.2f" % (f, p, r, acc, best_similarity_threshold))
             sys.stdout.flush()
 
             if f<prev_epoch_f1:
