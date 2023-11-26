@@ -166,7 +166,7 @@ if __name__ == '__main__':
             
             trues = np.array(trues)
             max_F1 = -np.inf
-            for similarity_threshold_int in range(-10, 10):
+            for similarity_threshold_int in range(-5, 10):
                 similarity_threshold = similarity_threshold_int/10
                 # Classify code pairs based on the similarity score and threshold
                 predicted_labels = (np.array(similarity_scores) > similarity_threshold)
@@ -181,12 +181,13 @@ if __name__ == '__main__':
             predicted_labels = np.array(similarity_scores) > best_similarity_threshold
             p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
             acc = 1-np.sum(np.abs(predicted_labels-np.transpose(trues)))/trues.shape[0]
-            print("(F1,P,R,A):%.3f, %.3f, %.3f, %.3f for similarity threshold %0.2f" % (f, p, r, acc, best_similarity_threshold))
-            sys.stdout.flush()
+
 
             if f<prev_epoch_f1:
                 print("Lower F1 than previous epoch. Early stopping...")
                 sys.stdout.flush()
                 break
             else:
+                print("(F1,P,R,A):%.3f, %.3f, %.3f, %.3f for similarity threshold %0.2f" % (f, p, r, acc, best_similarity_threshold))
+                sys.stdout.flush()
                 prev_epoch_f1 = f
