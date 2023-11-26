@@ -102,6 +102,9 @@ class BatchProgramCC(nn.Module):
         self.hidden = self.init_hidden()
         self.dropout = nn.Dropout(0.2)
 
+        # Add Batch Normalization layer
+        self.batch_norm = nn.BatchNorm1d(200) # Why 200?
+
     def init_hidden(self):
         if self.gpu is True:
             if isinstance(self.bigru, nn.LSTM):
@@ -159,4 +162,7 @@ class BatchProgramCC(nn.Module):
     #     return y
     def forward(self, x1):
         y = self.encode(x1)
+        
+        y = self.batch_norm(y)
+
         return y
