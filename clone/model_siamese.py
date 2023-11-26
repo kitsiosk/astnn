@@ -92,7 +92,7 @@ class BatchProgramCC(nn.Module):
         self.label_size = label_size
         self.encoder = BatchTreeEncoder(self.vocab_size, self.embedding_dim, self.encode_dim,
                                         self.batch_size, self.gpu, pretrained_weight)
-        self.root2label = nn.Linear(self.encode_dim, self.label_size)
+        #self.root2label = nn.Linear(self.encode_dim, self.label_size)
         # gru
         self.bigru = nn.GRU(self.encode_dim, self.hidden_dim, num_layers=self.num_layers, bidirectional=True,
                             batch_first=True)
@@ -100,10 +100,10 @@ class BatchProgramCC(nn.Module):
         self.hidden2label = nn.Linear(self.hidden_dim * 2, self.label_size)
         # hidden
         self.hidden = self.init_hidden()
-        self.dropout = nn.Dropout(0.2)
+        #self.dropout = nn.Dropout(0.2)
 
         # Add Batch Normalization layer
-        self.batch_norm = nn.BatchNorm1d(200) # Why 200?
+        self.batch_norm = nn.BatchNorm1d(128) # Why 200?
 
     def init_hidden(self):
         if self.gpu is True:
@@ -140,8 +140,10 @@ class BatchProgramCC(nn.Module):
             start = end
         encodes = torch.cat(seq)
         encodes = encodes.view(self.batch_size, max_len, -1)
-        encodes = nn.utils.rnn.pack_padded_sequence(encodes, torch.LongTensor(lens), True, False)
-        # return encodes
+        encodes = torch.transpose(encodes, 1, 2)
+        encodes = F.max_pool1d(encodes, encodes.size(2)).squeeze(2)
+
+        return encodes
 
         gru_out, _ = self.bigru(encodes, self.hidden)
         gru_out, _ = nn.utils.rnn.pad_packed_sequence(gru_out, batch_first=True, padding_value=-1e9)
@@ -162,7 +164,6 @@ class BatchProgramCC(nn.Module):
     #     return y
     def forward(self, x1):
         y = self.encode(x1)
-        
         y = self.batch_norm(y)
 
         return y
