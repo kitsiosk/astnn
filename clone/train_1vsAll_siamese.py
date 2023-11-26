@@ -45,7 +45,7 @@ if __name__ == '__main__':
         categories = [5]
     print("Train for ", str.upper(lang))
     sys.stdout.flush()
-    all_data = pd.read_pickle(root+lang+'/all/blocks.pickle').sample(100)
+    all_data = pd.read_pickle(root+lang+'/all/blocks.pickle')
     all_data['label'] = 1 - all_data['label']
 
     word2vec = Word2Vec.load(root+lang+"/all/embedding/node_w2v_128").wv
@@ -169,7 +169,6 @@ if __name__ == '__main__':
 
             predicted_labels = np.array(similarity_scores) > best_similarity_threshold
             p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
-            breakpoint()
             acc = 1-np.sum(np.abs(predicted_labels-np.transpose(trues)))/trues.shape[0]
             print("(P,R,F1,A):%.3f, %.3f, %.3f, %.3f for similarity threshold %0.2f" % (p, r, f, acc, best_similarity_threshold))
             sys.stdout.flush()
