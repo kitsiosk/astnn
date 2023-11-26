@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
             
             trues = np.array(trues)
-            predicted_labels = np.array(similarity_scores) > 0.5
+            predicted_labels = np.array(similarity_scores.cpu()) > 0.5
             p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
             print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
             sys.stdout.flush()
