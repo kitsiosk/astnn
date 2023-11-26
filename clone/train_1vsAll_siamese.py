@@ -45,7 +45,7 @@ if __name__ == '__main__':
         categories = [5]
     print("Train for ", str.upper(lang))
     sys.stdout.flush()
-    all_data = pd.read_pickle(root+lang+'/all/blocks.pickle')
+    all_data = pd.read_pickle(root+lang+'/all/blocks.pickle').sample(100)
     all_data['label'] = 1 - all_data['label']
 
     word2vec = Word2Vec.load(root+lang+"/all/embedding/node_w2v_128").wv
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     precision, recall, f1 = 0, 0, 0
     print('Start training...')
     sys.stdout.flush()
-    #breakpoint()
+    
     all_functionalities = all_data['functionality_id'].unique()
     all_functionalities.sort()
     for ii in all_functionalities:
@@ -95,6 +95,7 @@ if __name__ == '__main__':
         prev_epoch_f1 = 0
         for epoch in range(EPOCHS):
             print(epoch)
+            model.train()
             sys.stdout.flush()
 
             start_time = time.time()
@@ -128,6 +129,7 @@ if __name__ == '__main__':
             total = 0.0
             i = 0
 
+            model.eval()
             while i < len(test_data_t):
                 batch = get_batch(test_data_t, i, BATCH_SIZE)
                 i += BATCH_SIZE
