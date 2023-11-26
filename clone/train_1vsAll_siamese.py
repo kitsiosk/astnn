@@ -12,8 +12,8 @@ import sys
 
 margin = 50
 lr = 0.0001
-print("Margin=%d"%margin)
-print("lr=%0.5f", lr)
+print("Margin=%d" % margin)
+print("lr=%0.5f"% lr)
 
 def get_batch(dataset, idx, bs):
     tmp = dataset.iloc[idx: idx+bs]
