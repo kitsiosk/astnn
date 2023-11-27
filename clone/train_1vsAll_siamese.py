@@ -196,8 +196,8 @@ if __name__ == '__main__':
 
                 if (i/BATCH_SIZE) % 100 == 0:
                     print(i/BATCH_SIZE)
-                    print(loss.detach().numpy())
-                    t1 = torch.nn.functional.pairwise_distance(embeddings1, embeddings2).detach().numpy()
+                    print(loss.detach().cpu().numpy())
+                    t1 = torch.nn.functional.pairwise_distance(embeddings1, embeddings2).detach().cpu().numpy()
                     t2 = train_labels.cpu()
 
                     idx_clones = (t2 == 0).squeeze()
