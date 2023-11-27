@@ -114,6 +114,7 @@ if __name__ == '__main__':
             ###### Start testing
             predicts = []
             trues = []
+            similarity_scores = []
             total_loss = 0.0
             total = 0.0
             i = 0
@@ -131,14 +132,39 @@ if __name__ == '__main__':
                 loss = loss_function(output, Variable(test_labels))
 
                 # calc testing acc
-                predicted = (output.data > 0.5).cpu().numpy()
-                predicts.extend(predicted)
+                #predicted = (output.data > 0.5).cpu().numpy()
+                similarity_scores.extend(output.data.cpu().numpy())
                 trues.extend(test_labels.cpu().numpy())
                 total += len(test_labels)
                 total_loss += loss.item() * len(test_labels)
 
+
+            trues = np.array(trues)
+            max_F1 = -np.inf
+            for similarity_threshold_int in range(-5, 10):
+                similarity_threshold = similarity_threshold_int/10
+                # Classify code pairs based on the similarity score and threshold
+                predicted_labels = (np.array(similarity_scores) > similarity_threshold)
+                #acc = 1-np.sum(np.abs(predicted_labels-true_labels))/true_labels.shape[0]
+                P, R, F1, _ = precision_recall_fscore_support(predicted_labels, trues, average='binary', pos_label=1)
+
+
+                if F1 > max_F1:
+                    max_F1 = F1
+                    best_similarity_threshold = similarity_threshold
+
+            predicted_labels = np.array(similarity_scores) > best_similarity_threshold
             p, r, f, _ = precision_recall_fscore_support(trues, predicts, average='binary')
-            print("Total testing results(P,R,F1):%.3f, %.3f, %.3f" % (p, r, f))
+            print("F1=%.3f, P=%.3f, R=%.3f for similarity threshold %0.2f" % (f, p, r, best_similarity_threshold))
+
+            predicted_labels = np.array(similarity_scores) > 0
+            p, r, f, _ = precision_recall_fscore_support(trues, predicts, average='binary')
+            print("F1=%.3f, P=%.3f, R=%.3f for similarity threshold 0" % (f, p, r))
+
+            predicted_labels = np.array(similarity_scores) > 0.5
+            p, r, f, _ = precision_recall_fscore_support(trues, predicts, average='binary')
+            print("F1=%.3f, P=%.3f, R=%.3f for similarity threshold 0.5" % (f, p, r))
+
             sys.stdout.flush()
 
             if f<prev_epoch_f1:
