@@ -74,7 +74,7 @@ def eval_model_baseline(model, test_data_t, batch_size, use_gpu):
         similarity_threshold = similarity_threshold_int/10
         # Classify code pairs based on the similarity score and threshold
         predicted_labels = (np.array(similarity_scores) > similarity_threshold)
-        acc = 1-np.sum(np.abs(predicted_labels-trueså))/trues.shape[0]
+        acc = 1-np.sum(np.abs(predicted_labels-trues))/trues.shape[0]
         P, R, F1, _ = precision_recall_fscore_support(predicted_labels, trues, average='binary', pos_label=1)
     
     
