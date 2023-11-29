@@ -12,6 +12,7 @@ import sys
 
 margin = 50
 lr = 1e-3
+early_stopping = False
 print("Margin=%d" % margin)
 print("lr=%0.5f"% lr)
 
@@ -62,10 +63,13 @@ def eval_model(model, test_data_t):
     
     trues = np.array(trues)
     
-
+    predicted_labels = np.array(similarity_scores) > 0.2
+    p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
+    acc = 1-np.sum(np.abs(predicted_labels-np.transpose(trues)))/trues.shape[0]
+    print("F1=%.3f, P=%.3f, R=%.3f, A=%.3f for similarity threshold 0.2" % (f, p, r, acc))
 
     max_Acc = -np.inf
-    for similarity_threshold_int in range(-5, 10):
+    for similarity_threshold_int in range(0, 10):
         similarity_threshold = similarity_threshold_int/10
         # Classify code pairs based on the similarity score and threshold
         predicted_labels = (np.array(similarity_scores) > similarity_threshold)
@@ -84,7 +88,7 @@ def eval_model(model, test_data_t):
 
 
     max_F1 = -np.inf
-    for similarity_threshold_int in range(-5, 10):
+    for similarity_threshold_int in range(0, 10):
         similarity_threshold = similarity_threshold_int/10
         # Classify code pairs based on the similarity score and threshold
         predicted_labels = (np.array(similarity_scores) > similarity_threshold)
@@ -194,28 +198,28 @@ if __name__ == '__main__':
                 loss.backward()
                 optimizer.step()
 
-                if (i/BATCH_SIZE) % 100 == 0:
-                    print(i/BATCH_SIZE)
-                    print(loss.detach().cpu().numpy())
-                    t1 = torch.nn.functional.pairwise_distance(embeddings1, embeddings2).detach().cpu().numpy()
-                    t2 = train_labels.cpu()
+                # if (i/BATCH_SIZE) % 100 == 0:
+                #     print(i/BATCH_SIZE)
+                #     print(loss.detach().cpu().numpy())
+                #     t1 = torch.nn.functional.pairwise_distance(embeddings1, embeddings2).detach().cpu().numpy()
+                #     t2 = train_labels.cpu()
 
-                    idx_clones = (t2 == 0).squeeze()
-                    idx_non_clones = (t2 == 1).squeeze()
-                    print("Clones:")
-                    #print(t1[idx_clones])
-                    print(t1[idx_clones].mean())
-                    print("Non clones:")
-                    #print(t1[idx_non_clones])
-                    print(t1[idx_non_clones].mean())
+                #     idx_clones = (t2 == 0).squeeze()
+                #     idx_non_clones = (t2 == 1).squeeze()
+                #     print("Clones:")
+                #     #print(t1[idx_clones])
+                #     print(t1[idx_clones].mean())
+                #     print("Non clones:")
+                #     #print(t1[idx_non_clones])
+                #     print(t1[idx_non_clones].mean())
 
-                    f, similarity_scores = eval_model(model, test_data_t)
-                    print()
+                #     f, similarity_scores = eval_model(model, test_data_t)
+                #     print()
                 i += BATCH_SIZE
             
 
             f, similarity_scores = eval_model(model, test_data_t)
-            if f<=prev_epoch_f1:
+            if early_stopping and f<=prev_epoch_f1:
                 print("Lower F1 than previous epoch. Early stopping...")
                 sys.stdout.flush()
                 break
