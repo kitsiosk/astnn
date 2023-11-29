@@ -9,6 +9,7 @@ from torch.autograd import Variable
 from sklearn.metrics import precision_recall_fscore_support
 warnings.filterwarnings('ignore')
 import sys
+import pickle
 
 
 def get_batch(dataset, idx, bs):
@@ -60,6 +61,8 @@ if __name__ == '__main__':
     #breakpoint()
     all_functionalities = all_data['functionality_id'].unique()
     all_functionalities.sort()
+    # Dict to keep track of results
+    result = {'fcn_id':[], 'f1':[], 'p':[], 'r':[], 'a':[], 'test_size':[]}
     for ii in all_functionalities:
         # Initialize model
         model = BatchProgramCC(EMBEDDING_DIM,HIDDEN_DIM,MAX_TOKENS+1,ENCODE_DIM,LABELS,BATCH_SIZE,
@@ -139,6 +142,13 @@ if __name__ == '__main__':
 
 
             trues = np.array(trues)
+
+            predicted_labels = np.array(similarity_scores) > 0.5
+            p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
+            acc = 1-np.sum(np.abs(predicted_labels-trues))/trues.shape[0]
+            print("F1=%.3f, P=%.3f, R=%.3f, A=%.3f for similarity threshold 0.5" % (f, p, r, acc))
+
+
             max_F1 = -np.inf
             for similarity_threshold_int in range(-5, 10):
                 similarity_threshold = similarity_threshold_int/10
@@ -154,11 +164,8 @@ if __name__ == '__main__':
 
             predicted_labels = np.array(similarity_scores) > best_similarity_threshold
             p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
-            print("F1=%.3f, P=%.3f, R=%.3f for similarity threshold %0.2f" % (f, p, r, best_similarity_threshold))
-
-            predicted_labels = np.array(similarity_scores) > 0.5
-            p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
-            print("F1=%.3f, P=%.3f, R=%.3f for similarity threshold 0.5" % (f, p, r))
+            acc = 1-np.sum(np.abs(predicted_labels-trues))/trues.shape[0]
+            print("F1=%.3f, P=%.3f, R=%.3f, A=%.3f for similarity threshold %0.2f" % (f, p, r, acc, best_similarity_threshold))
 
             sys.stdout.flush()
 
@@ -168,3 +175,15 @@ if __name__ == '__main__':
                 break
             else:
                 prev_epoch_f1 = f
+
+        result['fcn_id'].append(ii)
+        result['f1'].append(f)
+        result['p'].append(p)
+        result['r'].append(r)
+        result['a'].append(acc)
+        result['test_size'].append(len(test_data_t))
+    
+    fname_results = 'result-astnn-baseline-%s.pickle'%(time.strftime("%Y%m%d-%H%M%S"))
+    with open(fname_results, 'wb') as handle:
+        pickle.dump(result, handle)
+

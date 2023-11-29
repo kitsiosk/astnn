@@ -9,6 +9,7 @@ from torch.autograd import Variable
 from sklearn.metrics import precision_recall_fscore_support
 warnings.filterwarnings('ignore')
 import sys
+import pickle
 
 margin = 50
 lr = 1e-3
@@ -108,7 +109,7 @@ def eval_model(model, test_data_t):
 
     sys.stdout.flush()
     model.train()
-    return f, similarity_scores
+    return f, p, r, acc, similarity_scores
 
 if __name__ == '__main__':
     import argparse
@@ -147,6 +148,8 @@ if __name__ == '__main__':
     
     all_functionalities = all_data['functionality_id'].unique()
     all_functionalities.sort()
+    # Dict to keep track of results
+    result = {'fcn_id':[], 'f1':[], 'p':[], 'r':[], 'a':[], 'test_size':[]}
     for ii in all_functionalities:
         # Initialize model
         model = BatchProgramCC(EMBEDDING_DIM,HIDDEN_DIM,MAX_TOKENS+1,ENCODE_DIM,LABELS,BATCH_SIZE,
@@ -218,7 +221,7 @@ if __name__ == '__main__':
                 i += BATCH_SIZE
             
 
-            f, similarity_scores = eval_model(model, test_data_t)
+            f, p, r, acc, similarity_scores = eval_model(model, test_data_t)
             if early_stopping and f<=prev_epoch_f1:
                 print("Lower F1 than previous epoch. Early stopping...")
                 sys.stdout.flush()
@@ -226,3 +229,14 @@ if __name__ == '__main__':
             else:
                 sys.stdout.flush()
                 prev_epoch_f1 = f
+        
+        result['fcn_id'].append(ii)
+        result['f1'].append(f)
+        result['p'].append(p)
+        result['r'].append(r)
+        result['a'].append(acc)
+        result['test_size'].append(len(test_data_t))
+    
+    fname_results = 'result-astnn-siam-%s.pickle'%(time.strftime("%Y%m%d-%H%M%S"))
+    with open(fname_results, 'wb') as handle:
+        pickle.dump(result, handle)
