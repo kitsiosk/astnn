@@ -28,7 +28,7 @@ assert train_on in ["bcb", "scb"]
 print("train on %s" % train_on)
 print("learning rate = %f" % learning_rate)
 
-root   = 'data/'
+root             = 'data/'
 data_bcb_and_scb = pd.read_pickle(root+lang+'/scb/blocks.pickle').sample(frac=1)
 
 word2vec = Word2Vec.load(root+lang+"/scb/embedding/node_w2v_128").wv

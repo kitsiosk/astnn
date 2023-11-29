@@ -88,6 +88,11 @@ def eval_model_baseline(model, test_data_t, batch_size, use_gpu):
     print("F1=%.3f, P=%.3f, R=%.3f, A=%.3f for similarity threshold %0.2f" % (f, p, r, acc, best_similarity_threshold))
 
 
+    predicted_labels = np.array(similarity_scores) > 0.5
+    p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
+    acc = 1-np.sum(np.abs(predicted_labels-trues))/trues.shape[0]
+    print("F1=%.3f, P=%.3f, R=%.3f, A=%.3f for similarity threshold 0.5" % (f, p, r, acc))
+
     sys.stdout.flush()
     model.train()
     return f, similarity_scores

@@ -156,10 +156,6 @@ if __name__ == '__main__':
             p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
             print("F1=%.3f, P=%.3f, R=%.3f for similarity threshold %0.2f" % (f, p, r, best_similarity_threshold))
 
-            predicted_labels = np.array(similarity_scores) > 0
-            p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
-            print("F1=%.3f, P=%.3f, R=%.3f for similarity threshold 0" % (f, p, r))
-
             predicted_labels = np.array(similarity_scores) > 0.5
             p, r, f, _ = precision_recall_fscore_support(trues, predicted_labels, average='binary')
             print("F1=%.3f, P=%.3f, R=%.3f for similarity threshold 0.5" % (f, p, r))
