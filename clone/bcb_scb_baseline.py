@@ -13,7 +13,7 @@ parser.add_argument('-t', '--train_on', type=str, help='Which dataset to use for
 args = parser.parse_args()
 train_on = args.train_on
 
-learning_rate  = 1e-3
+# learning_rate  = 1e-3
 lang           = "java"
 HIDDEN_DIM     = 100
 ENCODE_DIM     = 128
@@ -26,7 +26,7 @@ USE_GPU        = torch.cuda.is_available()
 assert train_on in ["bcb", "scb"]
 
 print("train on %s" % train_on)
-print("learning rate = %f" % learning_rate)
+# print("learning rate = %f" % learning_rate)
 
 root             = 'data/'
 data_bcb_and_scb = pd.read_pickle(root+lang+'/scb/blocks.pickle').sample(frac=1)
@@ -44,8 +44,8 @@ if USE_GPU:
     model.cuda()
 
 parameters = model.parameters()
-#optimizer = torch.optim.Adamax(parameters, lr=0.0001)
-optimizer = torch.optim.Adam(parameters, lr=learning_rate)
+optimizer = torch.optim.Adamax(parameters)
+#optimizer = torch.optim.Adam(parameters, lr=learning_rate)
 loss_function = torch.nn.BCELoss()
 
 # SCB has NaN in functionality_ID
