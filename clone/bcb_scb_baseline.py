@@ -1,15 +1,10 @@
 import pandas as pd
 import torch
-import time
 import numpy as np
-import warnings
 from gensim.models.word2vec import Word2Vec
 from model import BatchProgramCC
 from torch.autograd import Variable
-from sklearn.metrics import precision_recall_fscore_support
 import sys
-import argparse
-import matplotlib.pyplot as plt
 from my_utilities import get_batch, eval_model_baseline
 
 mode           = "trainBCBtestSCB" # either "trainBCBtestSCB" or "trainSCBtestBCB"
